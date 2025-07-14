@@ -1,4 +1,0 @@
-//mencari isi tweet yang duplikasi (tweet sama lebih dari 1 kali)
-SELECT * FROM (SELECT COUNT(*) AS jumlah, isi FROM dataset GROUP BY isi) AS terpilih WHERE jumlah > 1;
-
-INSERT INTO dataset_no_duplicate(tanggal, username, isi, pra) SELECT DISTINCT tanggal, username, isi, pra FROM dataset;

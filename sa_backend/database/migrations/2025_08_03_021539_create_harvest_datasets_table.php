@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cleaned_datasets', function (Blueprint $table) {
+        Schema::create('harvest_datasets', function (Blueprint $table) {
             $table->id();
-            $table->text('raw_tweet');
-            $table->text('cleaned_tweet');
-            $table->text('language')->nullable();
+            $table->string('tweet_id');
+            $table->datetime('datetime');
+            $table->text('tweet');
+            $table->string('username');
+            $table->string('language');
+            $table->timestamps();
         });
     }
 
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cleaned_datasets');
+        Schema::dropIfExists('harvest_datasets');
     }
 };

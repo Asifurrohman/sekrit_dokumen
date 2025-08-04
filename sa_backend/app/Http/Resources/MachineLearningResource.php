@@ -5,20 +5,19 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CleanedDatasetResource extends JsonResource
+class MachineLearningResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
+     * Transform the resource collection into an array.
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'rawTweet' => $this->raw_tweet,
-            'cleanedTweet' => $this->cleaned_tweet,
-            'language' => $this->language,
+            'cleanedTweet' => $this->cleaned_tweet
         ];
     }
 }

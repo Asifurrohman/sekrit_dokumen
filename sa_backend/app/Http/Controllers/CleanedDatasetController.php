@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\CleanedDatasetResource;
 use App\Models\CleanedDataset;
 use App\Models\Dataset;
+use App\Models\HarvestDataset;
 use Illuminate\Http\Request;
 use Sastrawi\Stemmer\StemmerFactory;
 use Illuminate\Support\Facades\Response;
@@ -41,7 +42,7 @@ class CleanedDatasetController extends Controller
     * Store a newly created resource in storage.
     */
     public function store(Request $request){
-        $tweets = Dataset::pluck('tweet');
+        $tweets = HarvestDataset::select('tweet', 'language')->get();
         
         $stopwordPath = storage_path('app/indonesian-stopwords/idstopwords.txt');
         if (!file_exists($stopwordPath)) {
@@ -49,6 +50,13 @@ class CleanedDatasetController extends Controller
         }
         $stopwords = file($stopwordPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $stopwords = array_map('strtolower', $stopwords);
+        
+        $slangPath = storage_path('app/indonesian-stopwords/combined_slang_words.txt');
+        if (!file_exists($slangPath)) {
+            return response()->json(['message' => 'File slang tidak ditemukan.'], 500);
+        }
+        $slangRaw = file_get_contents($slangPath);
+        $slangMap = json_decode($slangRaw, true);
         
         $factory = new StemmerFactory();
         $stemmer = $factory->createStemmer();
@@ -64,8 +72,9 @@ class CleanedDatasetController extends Controller
         $inserted = [];
         $seenCleaned = [];
         
-        foreach($uniqueTweets as $tweet){
-            $tweet = strtolower($tweet);
+        foreach($tweets->unique('tweet') as $row){
+            $tweet = strtolower($row->tweet);
+            $lang = $row->language ?? 'unknown';
             
             $tweet = preg_replace('/[\x{1F600}-\x{1F64F}' .  // emoticons
             '\x{1F300}-\x{1F5FF}' .  // symbols & pictographs
@@ -77,7 +86,11 @@ class CleanedDatasetController extends Controller
             // normalisasi tanda baca (misal: !!!!!! menjadi ! atau ?????? menjadi ?)
             $tweet = preg_replace('/([!?.,])\1+/', '$1', $tweet);
             
+            // Hapus URL yang ada di tweet
             $tweet = preg_replace('/https?:\/\/\S+/', '', $tweet);
+
+            // Hapus mention seperti @username
+            $tweet = preg_replace('/@\w+/', '', $tweet);
             
             $words = preg_split('/[\s\p{P}]+/u', $tweet, -1, PREG_SPLIT_NO_EMPTY);
             
@@ -102,7 +115,15 @@ class CleanedDatasetController extends Controller
                     continue;
                 }
                 
-                $stemmedWord = $stemmer->stem($word);
+                // $stemmedWord = $stemmer->stem($word);
+                
+                // $cleanWords[] = $stemmedWord;
+                
+                // Ganti slang jika ada
+                $normalizedWord = $slangMap[$word] ?? $word;
+                
+                // Stem kata yang sudah dinormalisasi
+                $stemmedWord = $stemmer->stem($normalizedWord);
                 
                 $cleanWords[] = $stemmedWord;
             }
@@ -116,7 +137,8 @@ class CleanedDatasetController extends Controller
                 
                 $inserted[] = CleanedDataset::create([
                     'raw_tweet' => $tweet,
-                    'cleaned_tweet' => $cleaned
+                    'cleaned_tweet' => $cleaned,
+                    'language' => $lang
                 ]);
                 
                 $seenCleaned[] = $cleaned;

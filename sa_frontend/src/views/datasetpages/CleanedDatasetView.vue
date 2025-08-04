@@ -2,11 +2,17 @@
     <div class="flex justify-between mb-4">
         <h2 class="text-slate-700 font-semibold text-2xl">Tabel Dataset Bersih</h2>
         <div class="relative group inline-block">
-            <button @click="exportCleanedDataset" :class="['flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition', !cleanedTweets.length ? 'bg-gray-300 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer']" @click.prevent="!cleanedTweets.length && $event.preventDefault()">
+            <!-- <button @click="exportCleanedDataset" :class="['flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition', !cleanedTweets.length ? 'bg-gray-300 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer']" @click.prevent="!cleanedTweets.length && $event.preventDefault()">
                 <span class="text-xl">
                     <Icon icon="material-symbols:download-rounded" />
                 </span>
                 Ekspor Dataset Bersih
+            </button> -->
+            <button class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer">
+                <span class="text-xl">
+                    <Icon icon="material-symbols:data-usage" />
+                </span>
+                Analisis Dataset
             </button>
             <div v-if="!cleanedTweets.length" class="absolute top-12 right-0 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50">
                 Tidak ada dataset yang bersih

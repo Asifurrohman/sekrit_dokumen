@@ -12,7 +12,8 @@
                 </button>
             </div>
             <div class="relative group inline-block">
-                <RouterLink to="/dataset/import-dataset" :class="['flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition', tweets.length > 0 ? 'bg-gray-300 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer']" @click.prevent="tweets.length > 0 && $event.preventDefault()">
+                <!-- <RouterLink to="/dataset/import-dataset" :class="['flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition', tweets.length > 0 ? 'bg-gray-300 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer']" @click.prevent="tweets.length > 0 && $event.preventDefault()"> -->
+                <RouterLink to="/dataset/import-dataset" class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 cursor-pointer">
                     <span class="text-xl">
                         <Icon icon="material-symbols:add-notes-outline-rounded" />
                     </span>
@@ -61,7 +62,8 @@
     { label: 'Tweet ID', key: 'tweetId', sortable: true },
     { label: 'Date', key: 'date', sortable: true },
     { label: 'Username', key: 'username', sortable: true },
-    { label: 'Tweet', key: 'tweet', sortable: true }
+    { label: 'Tweet', key: 'tweet', sortable: true },
+    { label: 'Language', key: 'language', sortable: true },
     ]
     
     const tweets = ref([])
@@ -78,14 +80,15 @@
         errorMessage.value = ''
         
         try {
-            const { data } = await axios.get('http://127.0.0.1:8000/api/datasets', { params: { page, search: search.value } })
+            const { data } = await axios.get('http://127.0.0.1:8000/api/harvest-datasets', { params: { page, search: search.value } })
             
             tweets.value = data.data.map((item, index) => ({
                 no: (data.meta.from || 1) + index,
                 tweetId: item.tweetId,
                 date: new Date(item.datetime).toLocaleString(),
                 username: item.username,
-                tweet: item.tweet
+                tweet: item.tweet,
+                language: item.language || 'unknown'
             }))
             
             pagination.value = data

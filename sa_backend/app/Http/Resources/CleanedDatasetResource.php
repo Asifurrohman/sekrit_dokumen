@@ -17,7 +17,7 @@ class CleanedDatasetResource extends JsonResource
         return [
             'id' => $this->id,
             'rawTweet' => $this->raw_tweet,
-            'casefolded_tweet' => $this->casefolded_tweet,
+            'casefoldedTweet' => $this->casefolded_tweet,
             'semiCleanedTweet' => $this->semi_cleaned_tweet,
             'cleansedTweet' => $this->cleansed_tweet,
             'fixedwordsTweet' => $this->fixedwords_tweet,

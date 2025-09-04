@@ -11,7 +11,7 @@
         <ul class="mt-4 md:mt-6">
             <SideLink to="/statistics" icon="material-symbols:pie-chart-outline" label="Statistik" />
             <SideLink to="/dataset" icon="material-symbols:database-outline" label="Dataset" />
-            <SideLink to="/preprocessing" icon="material-symbols:subtitles-gear-rounded" label="Pra-pemrosesan" />
+            <SideLink to="/preprocessing" icon="material-symbols:subtitles-gear-rounded" label="Detail Pra-pemrosesan" />
             <SideLink to="/classification" icon="material-symbols:book-6-rounded" label="Klasifikasi" />
             <SideLink to="/about" icon="material-symbols:info-outline-rounded" label="Informasi Aplikasi" />
         </ul>

@@ -1,0 +1,15 @@
+# Ignore virtual environment
+sa_python/pyvenv/
+
+# Python cache & temporary
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment files
+.env
+*.env
+
+# Jupyter notebook checkpoints (kalau ada)
+.ipynb_checkpoints/

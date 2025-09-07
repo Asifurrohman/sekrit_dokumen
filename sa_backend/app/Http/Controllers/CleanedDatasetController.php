@@ -24,7 +24,7 @@ class CleanedDatasetController extends Controller
             $keyword = $request->search;
             
             $query->where(function($q) use ($keyword){
-                $q->where('cleaned_tweet', 'like', "%$keyword%")->orWhere('raw_tweet', 'like', "%$keyword%");
+                $q->where('fully_cleaned_tweet', 'like', "%$keyword%")->orWhere('raw_tweet', 'like', "%$keyword%");
             });
         }
         
@@ -302,7 +302,113 @@ class CleanedDatasetController extends Controller
     }
     
     
-    public function recleanedDataset(Request $request){
+    // public function recleanedDataset(Request $request){
+    //     $tweets = CleanedDataset::where('language', 'in')->get();
+    
+    //     $customNormalization = [
+    //         'tertawa' => 'tawa',
+    //         'peperangan' => 'perang',
+    //     ];
+    
+    //     if($tweets->isEmpty()){
+    //         return response()->json(['message' => 'Tidak ada data tweet yang ditemukan.'], 404);
+    //     }
+    
+    //     $stopwordPath = storage_path('app/indonesian-stopwords/idstopwords.txt');
+    //     if (!file_exists($stopwordPath)) {
+    //         return response()->json(['message' => 'File stopword tidak ditemukan.'], 500);
+    //     }
+    
+    //     $stopwords = array_map('strtolower', file($stopwordPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
+    
+    //     $slangPath = storage_path('app/indonesian-stopwords/combined_slang_words.txt');
+    //     if (!file_exists($slangPath)) {
+    //         return response()->json(['message' => 'File slang tidak ditemukan.'], 500);
+    //     }
+    //     $slangMap = json_decode(file_get_contents($slangPath), true);
+    
+    //     $extendedSlangMap = config('extended-found-slang');
+    //     $slangMap = array_merge($slangMap, $extendedSlangMap);
+    
+    //     $factory = new \Sastrawi\Stemmer\StemmerFactory();
+    //     $stemmer = $factory->createStemmer();
+    
+    //     $purgedCharacters = ['@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '=', '{', '}', '[', ']', '|', '\\', '/', '<', '>', '`', '~'];
+    
+    //     $updatedCount = 0;
+    
+    //     foreach ($tweets as $row) {
+    //         $rawTweet = strtolower($row->raw_tweet);
+    
+    //         // Hapus emoji
+    //         $tweet = preg_replace('/[\x{1F600}-\x{1F64F}' .  
+    //         '\x{1F300}-\x{1F5FF}' .  
+    //         '\x{1F680}-\x{1F6FF}' .  
+    //         '\x{1F1E0}-\x{1F1FF}' .  
+    //         '\x{2600}-\x{26FF}' .    
+    //         '\x{2700}-\x{27BF}]/u', '', $rawTweet);
+    
+    //         // Normalisasi tanda baca berulang
+    //         $tweet = preg_replace('/([!?.,])\1+/', '$1', $tweet);
+    
+    //         // Hapus URL
+    //         $tweet = preg_replace('/https?:\/\/\S+/', '', $tweet);
+    
+    //         // Hapus mention @username
+    //         $tweet = preg_replace('/@\w+/', '', $tweet);
+    
+    //         // Hapus hashtag beserta kata setelahnya
+    //         $tweet = preg_replace('/#\w+/', '', $tweet);
+    
+    //         // Pisah kata
+    //         $words = preg_split('/[\s\p{P}]+/u', $tweet, -1, PREG_SPLIT_NO_EMPTY);
+    
+    //         $cleanWords = [];
+    
+    //         foreach ($words as $word) {
+    //             $word = trim($word);
+    
+    //             // Skip jika mengandung karakter khusus
+    //             if (strpbrk($word, implode('', $purgedCharacters))) {
+    //                 continue;
+    //             }
+    
+    //             // Skip stopwords, angka, atau kata 'rp'
+    //             if (in_array($word, $stopwords) || preg_match('/\d/', $word) || $word === 'rp') {
+    //                 continue;
+    //             }
+    
+    //             // Ganti slang
+    //             $normalizedWord = $slangMap[$word] ?? $word;
+    
+    //             if (isset($customNormalization[$normalizedWord])) {
+    //                 $normalizedWord = $customNormalization[$normalizedWord];
+    //             }
+    
+    //             // Stemming
+    //             $stemmedWord = $stemmer->stem($normalizedWord);
+    
+    //             $cleanWords[] = $stemmedWord;
+    //         }
+    
+    //         $cleanedTweet = implode(' ', $cleanWords);
+    
+    //         // Update jika hasil cleaning berbeda
+    //         if (!empty($cleanedTweet) && $row->cleaned_tweet !== $cleanedTweet) {
+    //             $row->cleaned_tweet = $cleanedTweet;
+    //             $row->save();
+    //             $updatedCount++;
+    //         }
+    //     }
+    
+    //     return response()->json([
+    //         'message' => "$updatedCount data berhasil dibersihkan ulang.",
+    //         'total_updated' => $updatedCount
+    //     ]);
+    // }
+    
+    public function recleanedDataset(Request $request)
+    {
         $tweets = CleanedDataset::where('language', 'in')->get();
         
         $customNormalization = [
@@ -310,95 +416,103 @@ class CleanedDatasetController extends Controller
             'peperangan' => 'perang',
         ];
         
-        if($tweets->isEmpty()){
+        if ($tweets->isEmpty()) {
             return response()->json(['message' => 'Tidak ada data tweet yang ditemukan.'], 404);
         }
         
-        $stopwordPath = storage_path('app/indonesian-stopwords/idstopwords.txt');
-        if (!file_exists($stopwordPath)) {
-            return response()->json(['message' => 'File stopword tidak ditemukan.'], 500);
-        }
-        
-        $stopwords = array_map('strtolower', file($stopwordPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
-        
+        // Slang map
         $slangPath = storage_path('app/indonesian-stopwords/combined_slang_words.txt');
         if (!file_exists($slangPath)) {
             return response()->json(['message' => 'File slang tidak ditemukan.'], 500);
         }
         $slangMap = json_decode(file_get_contents($slangPath), true);
-        
         $extendedSlangMap = config('extended-found-slang');
         $slangMap = array_merge($slangMap, $extendedSlangMap);
         
-        $factory = new \Sastrawi\Stemmer\StemmerFactory();
-        $stemmer = $factory->createStemmer();
+        // Stopwords
+        $stopwordPath = storage_path('app/indonesian-stopwords/idstopwords.txt');
+        if (!file_exists($stopwordPath)) {
+            return response()->json(['message' => 'File stopword tidak ditemukan.'], 500);
+        }
+        $stopwords = array_map('strtolower', file($stopwordPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
         
-        $purgedCharacters = ['@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '=', '{', '}', '[', ']', '|', '\\', '/', '<', '>', '`', '~'];
+        // Stemmer
+        $factory = new StemmerFactory();
+        $stemmer = $factory->createStemmer();
         
         $updatedCount = 0;
         
         foreach ($tweets as $row) {
-            $rawTweet = strtolower($row->raw_tweet);
+            $rawTweet = $row->raw_tweet;
+            $lang = $row->language ?? 'unknown';
             
-            // Hapus emoji
-            $tweet = preg_replace('/[\x{1F600}-\x{1F64F}' .  
-            '\x{1F300}-\x{1F5FF}' .  
-            '\x{1F680}-\x{1F6FF}' .  
-            '\x{1F1E0}-\x{1F1FF}' .  
-            '\x{2600}-\x{26FF}' .    
-            '\x{2700}-\x{27BF}]/u', '', $rawTweet);
+            // 1. Casefolding
+            $casefolded = strtolower($rawTweet);
             
-            // Normalisasi tanda baca berulang
-            $tweet = preg_replace('/([!?.,])\1+/', '$1', $tweet);
-            
-            // Hapus URL
-            $tweet = preg_replace('/https?:\/\/\S+/', '', $tweet);
-            
-            // Hapus mention @username
-            $tweet = preg_replace('/@\w+/', '', $tweet);
-            
-            // Hapus hashtag beserta kata setelahnya
+            // 2. Semi-clean (regex dasar + slang normalization)
+            $tweet = preg_replace('/https?:\/\/\S+/', '', $rawTweet);
             $tweet = preg_replace('/#\w+/', '', $tweet);
+            $tweet = preg_replace('/@\w+/', '', $tweet);
+            $tweet = preg_replace('/\s+/', ' ', $tweet);
             
-            // Pisah kata
-            $words = preg_split('/[\s\p{P}]+/u', $tweet, -1, PREG_SPLIT_NO_EMPTY);
+            $words = explode(' ', trim($tweet));
+            $normalizedWords = array_map(function ($word) use ($slangMap) {
+                return $slangMap[$word] ?? $word;
+            }, $words);
             
-            $cleanWords = [];
+            $semiCleaned = strtolower(implode(' ', $normalizedWords));
             
-            foreach ($words as $word) {
-                $word = trim($word);
-                
-                // Skip jika mengandung karakter khusus
-                if (strpbrk($word, implode('', $purgedCharacters))) {
-                    continue;
-                }
-                
-                // Skip stopwords, angka, atau kata 'rp'
-                if (in_array($word, $stopwords) || preg_match('/\d/', $word) || $word === 'rp') {
-                    continue;
-                }
-                
-                // Ganti slang
-                $normalizedWord = $slangMap[$word] ?? $word;
-                
-                if (isset($customNormalization[$normalizedWord])) {
-                    $normalizedWord = $customNormalization[$normalizedWord];
-                }
-                
-                // Stemming
-                $stemmedWord = $stemmer->stem($normalizedWord);
-                
-                $cleanWords[] = $stemmedWord;
-            }
+            // 3. Cleansed Tweet
+            $cleansed = $casefolded;
+            $cleansed = preg_replace('/https?:\/\/\S+/', '', $cleansed);
+            $cleansed = preg_replace('/@\w+/', '', $cleansed);
+            $cleansed = preg_replace('/#\w+/', '', $cleansed);
+            $cleansed = preg_replace('/[\x{1F600}-\x{1F64F}' .
+            '\x{1F300}-\x{1F5FF}' .
+            '\x{1F680}-\x{1F6FF}' .
+            '\x{1F1E0}-\x{1F1FF}' .
+            '\x{2600}-\x{26FF}' .
+            '\x{2700}-\x{27BF}]/u', '', $cleansed); // hapus emoji
+            $cleansed = preg_replace('/\d+/', '', $cleansed);
+            $cleansed = preg_replace('/[[:punct:]]/', ' ', $cleansed);
+            $cleansed = preg_replace('/\s+/', ' ', $cleansed);
             
-            $cleanedTweet = implode(' ', $cleanWords);
+            // 4. Fixed Words
+            $wordsFixed = explode(' ', trim($cleansed));
+            $fixedWords = array_map(function ($word) use ($slangMap, $customNormalization) {
+                $word = $slangMap[$word] ?? $word;
+                return $customNormalization[$word] ?? $word;
+            }, $wordsFixed);
+            $fixedTweet = implode(' ', $fixedWords);
             
-            // Update jika hasil cleaning berbeda
-            if (!empty($cleanedTweet) && $row->cleaned_tweet !== $cleanedTweet) {
-                $row->cleaned_tweet = $cleanedTweet;
-                $row->save();
-                $updatedCount++;
-            }
+            // 5. Stopword removal
+            $stopwordRemovedWords = array_filter(explode(' ', $fixedTweet), function ($word) use ($stopwords) {
+                return !in_array($word, $stopwords) && $word !== '' && $word !== 'rp';
+            });
+            $stopwordRemoved = implode(' ', $stopwordRemovedWords);
+            
+            // 6. Stemming
+            $stemmedWords = array_map(function ($word) use ($stemmer) {
+                return $stemmer->stem($word);
+            }, explode(' ', $stopwordRemoved));
+            $stemmedTweet = implode(' ', $stemmedWords);
+            
+            // 7. Fully Cleaned
+            $fullyCleaned = $stemmedTweet;
+            
+            // --- Update record jika ada perubahan ---
+            $row->update([
+                'casefolded_tweet'      => $casefolded,
+                'semi_cleaned_tweet'    => $semiCleaned,
+                'cleansed_tweet'        => $cleansed,
+                'fixedwords_tweet'      => $fixedTweet,
+                'stopwordremoved_tweet' => $stopwordRemoved,
+                'stemmed_tweet'         => $stemmedTweet,
+                'fully_cleaned_tweet'   => $fullyCleaned,
+                'updated_at'            => now(),
+            ]);
+            
+            $updatedCount++;
         }
         
         return response()->json([
@@ -406,6 +520,7 @@ class CleanedDatasetController extends Controller
             'total_updated' => $updatedCount
         ]);
     }
+    
     
     
     

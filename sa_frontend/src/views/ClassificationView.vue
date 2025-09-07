@@ -29,7 +29,7 @@
             </div>
         </div>
         <div>
-            <input type="text" v-model="search" @keyup.enter="fetchClassifiedDataset(1)" placeholder="Cari data..." class="mb-4 px-4 py-2 border border-gray-300 rounded-lg w-full">
+            <SearchBar v-model="search" placeholder="Cari dataset..." @enter="fetchClassifiedDataset(1)"></SearchBar>
             <p class="text-sm text-slate-500 text-left">
                 Total data: <span class="font-semibold">{{ pagination.meta?.total || 0 }}</span>
             </p>
@@ -50,6 +50,7 @@ import { useRouter } from 'vue-router'
 
 import DataTable from '@/components/Table/DataTable.vue'
 import Pagination from '@/components/Pagination/Pagination.vue'
+import SearchBar from '@/components/SearchBar/SearchBar.vue'
 
 const isLoading = ref(false)
 const isTraining = ref(false)
@@ -66,7 +67,7 @@ const statisticData = ref([])
 const headers = [
 { label: 'No', key: 'no' },
 { label: 'Tweet Mentah', key: 'rawTweet' },
-{ label: 'Tweet Bersih', key: 'cleanedTweet' },
+{ label: 'Tweet Bersih', key: 'fullyCleanedTweet' },
 { label: 'Klasifikasi', key: 'classification' },
 ]
 
@@ -83,7 +84,7 @@ const fetchClassifiedDataset = async (page = 1) => {
             id: item.id,
             no: (data.meta.from || 1) + index,
             rawTweet: item.rawTweet,
-            cleanedTweet: item.cleanedTweet,
+            fullyCleanedTweet: item.fullyCleanedTweet,
             classification: item.classification || '',
             // editClassification: item.classification || ''
         }))

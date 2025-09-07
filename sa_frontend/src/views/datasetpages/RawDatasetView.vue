@@ -30,7 +30,7 @@
     </div>
     
     <div>
-        <input type="text" v-model="search" @keyup.enter="fetchDataset(1)" placeholder="Cari tweet atau username..." class="mb-4 px-4 py-2 border border-gray-300 rounded-lg w-full">
+        <SearchBar v-model="search" placeholder="Cari dataset..." @enter="fetchDataset(1)"></SearchBar>
         <p class="text-sm text-slate-500 text-left">
             Total dataset: <span class="font-semibold">{{ pagination.meta?.total || 0 }}</span>
         </p>
@@ -52,6 +52,7 @@ import DataTable from '@/components/Table/DataTable.vue'
 import Pagination from '@/components/Pagination/Pagination.vue'
 import MyLoader from '@/components/LoaderAnimation/MyLoader.vue'
 import InfoTooltip from '@/components/Tooltip/InfoTooltip.vue'
+import SearchBar from '@/components/SearchBar/SearchBar.vue'
 
 const headers = [
 { label: 'No', key: 'no' },

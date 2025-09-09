@@ -74,17 +74,9 @@ const router = createRouter({
       name: 'preprocessing',
       component: PreprocessingView,
       redirect: to => {
-        return { name: 'preprocessing-cleaning' }
+        return { name: 'preprocessing-casefolding' }
       },
       children: [
-        {
-          path: 'cleaning',
-          name: 'preprocessing-cleaning',
-          component: PreprocessingCleaningView,
-          meta: {
-            title: 'preprocessing cleaning'
-          }
-        },
         {
           path: 'casefolding',
           name: 'preprocessing-casefolding',
@@ -99,6 +91,14 @@ const router = createRouter({
           component: PreprocessingFixedwordsView,
           meta: {
             title: 'preprocessing fixed words'
+          }
+        },
+        {
+          path: 'cleaning',
+          name: 'preprocessing-cleaning',
+          component: PreprocessingCleaningView,
+          meta: {
+            title: 'preprocessing cleaning'
           }
         },
         {

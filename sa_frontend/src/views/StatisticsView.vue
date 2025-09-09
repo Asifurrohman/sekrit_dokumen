@@ -8,17 +8,33 @@
         
         <h2 class="text-lg font-semibold text-gray-800 mt-8 mb-4">Confusion Matrix</h2>
         <apexchart type="heatmap" height="300" :options="cmOptions" :series="cmSeries"></apexchart>
+        
+        <h2 class="text-lg font-semibold text-gray-800 mt-8 mb-4">Word Cloud</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-semibold text-gray-700 mb-2">Positive Words</h3>
+                <WordCloud :words="positiveWords" :color="wordColor" />
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-700 mb-2">Negative Words</h3>
+                <vue3-word-cloud style="width: 100%; height: 300px" :words="negativeWords" :color="wordColor"></vue3-word-cloud>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import Vue3WordCloud from 'vue3-word-cloud';
 
 const tweetData = ref([])
 const statisticData = ref([])
 const series = ref([0, 0])
 const cmSeries = ref([])
+const positiveWords = ref([])
+const negativeWords = ref([])
+const WordCloud = Vue3WordCloud
 
 
 // Opsi chart
@@ -80,6 +96,7 @@ const cmOptions = ref({
     }
 })
 
+
 const fetchStatisticData = async () => {
     try {
         const { data } = await axios.get('http://127.0.0.1:8000/api/cleaned-datasets/all')
@@ -120,16 +137,55 @@ const fetchStatisticData = async () => {
             latestModel.f1Score || 0
             ]
             
-            const cm = latestModel.confusionMatrix || [[0,0],[0,0]]
+            const cmData = latestModel.confusionMatrix
+            const cm = cmData?.matrix || [[0,0],[0,0]]
             cmSeries.value = [
-            { name: "True Negative", data: [{ x: "Pred: Negative", y: cm[0][0] }, { x: "Pred: Positive", y: cm[0][1] }] },
-            { name: "True Positive", data: [{ x: "Pred: Negative", y: cm[1][0] }, { x: "Pred: Positive", y: cm[1][1] }] }
+            { 
+                name: "Actual Negative", 
+                data: [
+                { x: "Pred: Negative", y: cm[0][0] }, // True Negative
+                { x: "Pred: Positive", y: cm[0][1] }  // False Positive
+                ] 
+            },
+            { 
+                name: "Actual Positive", 
+                data: [
+                { x: "Pred: Negative", y: cm[1][0] }, // False Negative
+                { x: "Pred: Positive", y: cm[1][1] }  // True Positive
+                ] 
+            }
             ]
+            
+            let topWordsData = latestModel.topWords
+            
+            // kalau masih string, parse jadi object
+            if (typeof topWordsData === "string") {
+                try {
+                    topWordsData = JSON.parse(topWordsData)
+                } catch (e) {
+                    console.error("Gagal parse topWords:", e)
+                    topWordsData = { positive: [], negative: [] }
+                }
+            }
+            
+            positiveWords.value = (topWordsData?.positive || []).map(
+            w => [w, Math.floor(Math.random() * 20) + 10]
+            )
+            
+            negativeWords.value = (topWordsData?.negative || []).map(
+            w => [w, Math.floor(Math.random() * 20) + 10]
+            )
+            
         }
         
     } catch(error){
         console.error('Gagal mengambil data statistik:', error)
     }
+}
+
+const wordColor = () => {
+    const colors = ["#16a34a", "#2563eb", "#9333ea", "#ea580c", "#dc2626"]
+    return colors[Math.floor(Math.random() * colors.length)]
 }
 
 

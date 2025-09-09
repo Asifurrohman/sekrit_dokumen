@@ -14,12 +14,12 @@ const TabLinks = [
         label: 'Case Folding'
     },
     {
-        to: '/preprocessing/cleaning',
-        label: 'Cleaning'
-    },
-    {
         to: '/preprocessing/fixed-words',
         label: 'Fixed Words'
+    },
+    {
+        to: '/preprocessing/cleaning',
+        label: 'Cleaning'
     },
     {
         to: '/preprocessing/stopword-removal',

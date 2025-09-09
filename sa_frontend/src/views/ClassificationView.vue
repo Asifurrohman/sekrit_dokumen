@@ -24,6 +24,7 @@
                 <select v-model="filterLabel" @change="fetchClassifiedDataset(1)" class="border border-gray-300 px-3 py-2 rounded-lg">
                     <option value="">Filter Label</option>
                     <option value="positive">Positif</option>
+                    <option value="positive">Netral</option>
                     <option value="negative">Negatif</option>
                 </select>
             </div>
@@ -135,7 +136,7 @@ const submitToEvaluate = async () => {
         toast.success('Evaluasi model selesai!')
         router.push('/statistics')
     } catch(error) {
-        // console.error('Gagal mengklasifikasikan dataset:', error.response?.data || error.message)
+        console.error('Gagal mengevaluasi dataset:', error.response?.data || error.message)
         toast.error('Evaluasi model gagal!')
     } finally {
         isEvaluating.value = false

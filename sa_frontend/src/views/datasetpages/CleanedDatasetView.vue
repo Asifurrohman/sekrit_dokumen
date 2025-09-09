@@ -39,7 +39,7 @@
         <p class="text-sm text-slate-500 text-left">
             Total dataset: <span class="font-semibold">{{ pagination.meta?.total || 0 }}</span>
         </p>
-        <DataTable :headers="headers" :items="cleanedTweets" :isLoading="isLoading"></DataTable>
+        <DataTable :headers="headers" :items="cleanedTweets" :isLoading="isLoading" :showDelete="true" @deleteItem="handleDeleteItem"></DataTable>
         <Pagination v-if="cleanedTweets.length > 0" :currentPage="pagination.meta?.current_page || 1" :lastPage="pagination.meta?.last_page || 1" @change="(page) => fetchCleanedDataset(page, search)"></Pagination>
     </div>
     
@@ -64,7 +64,7 @@ const headers = [
 { label: 'No', key: 'no' },
 { label: 'Tweet Mentah', key: 'rawTweet', sortable: true },
 { label: 'Tweet Semi Bersih', key: 'semiCleanedTweet', sortable: true },
-{ label: 'Tweet Bersih', key: 'fullyCleanedTweet', sortable: true }
+{ label: 'Tweet Bersih', key: 'fullyCleanedTweet', sortable: true },
 ]
 
 const cleanedTweets = ref([])
@@ -87,6 +87,7 @@ const fetchCleanedDataset = async (page = 1) => {
         
         cleanedTweets.value = data.data.map((item, index) => ({
             no: (data.meta.from || 1) + index,
+            id: item.id,
             rawTweet: item.rawTweet,
             semiCleanedTweet: item.semiCleanedTweet,
             fullyCleanedTweet: item.fullyCleanedTweet
@@ -137,6 +138,20 @@ const submitDataLabeling = async () => {
         isClassifying.value = false
     }
 }
+
+const handleDeleteItem = async (item) => {
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/cleaned-datasets/${item.id}`) // ✅ pakai id
+
+    toast.success('Data berhasil dihapus!')
+    fetchCleanedDataset(pagination.value.meta?.current_page || 1, search.value)
+
+  } catch (error) {
+    console.error('Gagal menghapus data:', error)
+    toast.error('Gagal menghapus data!')
+  }
+}
+
 
 const exportCleanedDataset = async() => {
     try{

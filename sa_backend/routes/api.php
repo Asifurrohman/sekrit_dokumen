@@ -17,6 +17,7 @@ Route::apiResource('/datasets', DatasetController::class);
 Route::apiResource('/harvest-datasets', HarvestDatasetController::class);
 
 Route::delete('/cleaned-datasets', [CleanedDatasetController::class, 'destroyAll']);
+Route::delete('/cleaned-datasets/{id}', [CleanedDatasetController::class, 'deleteSelectedDataset']);
 Route::get('/cleaned-datasets/export', [CleanedDatasetController::class, 'export']);
 Route::get('/cleaned-datasets/all', [CleanedDatasetController::class, 'all']);
 Route::post('/cleaned-datasets/reclean', [CleanedDatasetController::class, 'recleanedDataset']);

@@ -9,27 +9,28 @@
                             <Icon v-if="sortKey === header.key" :icon="sortOrder === 'asc' ? 'material-symbols:arrow-upward-alt-rounded' : 'material-symbols:arrow-downward-alt-rounded'" class="inline-block w-4 h-4 ml-1 text-slate-500" />
                         </span>
                     </th>
+                    <th v-if="showDelete" class="p-3 text-center rounded-r-lg">
+                        Aksi
+                    </th>
                 </tr>
             </thead>
             <tbody class="text-sm text-slate-700">
                 <tr v-for="(item, index) in sortedItems" :key="index" class="odd:bg-white even:bg-slate-50">
                     <td v-for="(header, i) in headers" :key="i" :class="['p-4', i === 0 ? 'min-w-[72px] w-12 text-center' : '']">
-                        
-                        <div v-if="header.key === 'editClassification'">
-                            <select v-model="item.classification" @change="$emit('update-classification', { item, value: item.classification })" class="border rounded px-2 py-1 text-sm">
-                                <option value="positif">Positif</option>
-                                <option value="negatif">Negatif</option>
-                            </select>
-                        </div>
-                        <div v-else-if="header.key === 'classification' && item.classification === ''">
+                        <div v-if="header.key === 'classification' && item.classification === ''">
                             Belum Diklasifikasikan
                         </div>
-                        <div  v-else-if="header.key === 'classification'" :class="['inline-block px-2 py-0.5 rounded-full text-white text-sm font-medium', item.classification === 'positive' ? 'bg-green-500' : '', item.classification === 'negative' ? 'bg-red-500' : '']">
+                        <div  v-else-if="header.key === 'classification'" :class="['inline-block px-2 py-0.5 rounded-full text-white text-sm font-medium', item.classification === 'positive' ? 'bg-green-500' : '', item.classification === 'negative' ? 'bg-red-500' : '', item.classification === 'neutral' ? 'bg-slate-500' : '']">
                             {{ item.classification }}
                         </div>
                         <div v-else>
                             {{ item[header.key] }}
                         </div>
+                    </td>
+                    <td v-if="showDelete" class="p-4 text-center">
+                        <button @click="confirmDelete(item)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
+                            Hapus
+                        </button>
                     </td>
                 </tr>
                 
@@ -41,12 +42,29 @@
                 
                 
                 <tr v-if="!sortedItems.length && !isLoading">
-                    <td :colspan="headers.length" class="text-center p-4 text-lg text-slate-500">
+                    <td :colspan="headers.length + (showDelete ? 1 : 0)" class="text-center p-4 text-lg text-slate-500">
                         Tidak ada dataset.
                     </td>
                 </tr>
             </tbody>
         </table>
+        
+        <div v-if="showConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-80">
+                <h2 class="text-lg font-semibold mb-4">Konfirmasi Hapus</h2>
+                <p class="text-sm text-slate-600 mb-6">
+                    Apakah kamu yakin ingin menghapus data ini?
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button @click="showConfirm = false" class="px-4 py-2 rounded border text-slate-600 hover:bg-slate-100">
+                        Batal
+                    </button>
+                    <button @click="deleteItem" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">
+                        Ya, Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -65,12 +83,20 @@ const props = defineProps({
     isLoading: {
         type: Boolean,
         default: false
+    },
+    showDelete: {
+        type: Boolean,
+        default: false
     }
 })
+
+const emit = defineEmits(['delete-item'])
 
 
 const sortKey = ref(null)
 const sortOrder = ref('asc')
+const showConfirm = ref(false)
+const itemToDelete = ref(null)
 
 const sortBy = (key) => {
     if(sortKey.value === key){
@@ -79,6 +105,19 @@ const sortBy = (key) => {
         sortKey.value = key
         sortOrder.value = 'asc'
     }
+}
+
+const confirmDelete = (item) => {
+    itemToDelete.value = item
+    showConfirm.value = true
+}
+
+const deleteItem = () => {
+    if (itemToDelete.value) {
+        emit('delete-item', itemToDelete.value)
+    }
+    showConfirm.value = false
+    itemToDelete.value = null
 }
 
 const sortedItems = computed(() => {
